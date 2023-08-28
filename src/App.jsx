@@ -108,6 +108,9 @@ const ChildApp = ({ form, formData, dispatch }) => {
     e.preventDefault();
     console.log("test formData", formData);
     console.log("test errors", errors);
+    form?.flat()?.filter((field) => {
+      validateField(field.name, formData[field.name]);
+    });
   };
 
   return (
