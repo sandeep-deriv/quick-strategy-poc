@@ -1,160 +1,154 @@
-import { useState } from 'react'
-import config from './config'
-import useInput from './hooks/useInput';
+import { useReducer, useState } from "react";
+import config from "./config";
+import CustomInput from "./compoents/CustomInput";
 
-const assets = [
-	'EURUSD',
-	'GBPUSD',
-	'USDJPY',
-	'USDCHF',
-	'AUDUSD',
-	'USDCAD',
-	'NZDUSD',
-	'EURGBP',
-	'EURJPY',
-	'EURCHF',
-	'EURCAD',
-	'EURAUD',
-	'EURNZD',
-	'GBPJPY',
-	'GBPCHF',
-	'GBPCAD',
-	'GBPAUD',
-	'GBPNZD',
-	'CHFJPY',
-	'CADJPY',
-	'AUDJPY',
-	'NZDJPY',
-	'CADCHF',
-	'AUDCHF',
-	'NZDCHF',
-]
-
-function App() {
-	const [selected, setSelected] = useState('martingale');
-	const [asset, get_asset, reset_asset] = useInput({ type: 'select', name: 'asset', label: 'Asset', initial_value: 'EURUSD', options: assets });
-	const [trade_type, get_trade_type, reset_trade_type] = useInput({ type: 'select', name: 'trade_type', label: 'Trade Type', initial_value: 'call', options: ['CALL', 'PUT'] });
-	const [duration_unit, get_duration_unit, reset_duration_unit] = useInput({ type: 'select', name: 'duration_unit', label: 'Duration Unit', initial_value: 'Ticks', options: ['Ticks', 'Seconds', 'Minutes', 'Hours', 'Days'] });
-	const [duration_value, get_duration_value, reset_duration_value] = useInput({ type: 'text', name: 'duration_value', label: 'Duration Value', initial_value: 1, limit: { min: 1, max: 15 } });
-	const [initial_stake, get_initial_stake, reset_initial_stake] = useInput({ type: 'text', name: 'initial_stake', label: 'Initial Stake', initial_value: '0.35', limit: { min: 0.35, max: 6000 } });
-	const [size, get_size, reset_size] = useInput({ type: 'text', name: 'size', label: 'Size', initial_value: 1, limit: { min: 1, max: 100 } });
-	const [profit_threshold, get_profit_threshold, reset_profit_threshold] = useInput({ type: 'text', name: 'profit_threshold', label: 'Profit Threshold', initial_value: '', limit: { min: 1, max: 100 } });
-	const [loss_threshold, get_loss_threshold, reset_loss_threshold] = useInput({ type: 'text', name: 'loss_threshold', label: 'Loss Threshold', initial_value: '', limit: { min: 1, max: 100 } });
-	const [streak_cycles, get_streak_cycles, reset_streak_cycles] = useInput({ type: 'text', name: 'streak_cycles', label: 'Streak Cycles', initial_value: '', limit: { min: 1, max: 100 } });
-	const [units, get_units, reset_units] = useInput({ type: 'text', name: 'units', label: 'Units', initial_value: 1, limit: { min: 1, max: 100 } });
-
-	const inputs = {
-		asset,
-		trade_type,
-		duration_unit,
-		duration_value,
-		initial_stake,
-		size,
-		profit_threshold,
-		loss_threshold,
-		streak_cycles,
-		units,
-	};
-
-	const getters = {
-		get_asset,
-		get_trade_type,
-		get_duration_unit,
-		get_duration_value,
-		get_initial_stake,
-		get_size,
-		get_profit_threshold,
-		get_loss_threshold,
-		get_streak_cycles,
-		get_units,
-	};
-
-	const resets = {
-		reset_asset,
-		reset_trade_type,
-		reset_duration_unit,
-		reset_duration_value,
-		reset_initial_stake,
-		reset_size,
-		reset_profit_threshold,
-		reset_loss_threshold,
-		reset_streak_cycles,
-		reset_units,
-	};
-
-	const renderForm = () => {
-		const form = config[selected] || [];
-
-		return form.map((item, index) => {
-			if (Array.isArray(item)) {
-				return (
-					<div className='input__group' key={index + 'outer'}>
-						{item.map((i) => { return <div key={i}>{inputs[i]}</div> })}
-					</div>
-				)
-			}
-			return <div key={item}>{inputs[item]}</div>
-		});
-	}
-
-	const handleSelect = (e) => {
-		const form = config[selected] || [];
-		form?.forEach((item) => {
-			if (Array.isArray(item)) {
-				item.forEach((i) => {
-					const r = `reset_${i}`;
-					console.log(r);
-					resets[r]?.();
-				});
-				return;
-			}
-			const i = `reset_${item}`;
-			console.log(i);
-			resets[i]?.();
-		});
-		setSelected(e.target.value);
-	}
-
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		const form = config[selected] || [];
-		let data = {}
-		form.forEach((item) => {
-			if (Array.isArray(item)) {
-				item.forEach((i) => {
-					const d1 = getters[`get_${i}`]?.()
-					data = {
-						...d1,
-						...data,
-					}
-				});
-				return;
-			}
-			const d2 = getters[`get_${item}`]?.();
-			data = {
-				...d2,
-				...data,
-			}
-		});
-		console.log(data);
-	}
-
-	return (
-		<div>
-			<select onChange={handleSelect} value={selected} className='input__select'>
-				<option value="martingale">Martingale</option>
-				<option value="dalembert">Dalembert</option>
-				<option value="oscars">Oscars</option>
-				<option value="shafin">Shafin</option>
-			</select>
-			<div >
-				{renderForm()}
-			</div>
-			<div>
-				<button onClick={handleSubmit}>Submit</button>
-			</div>
-		</div>
-	)
+// Reducer function to handle form state changes
+function formReducer(state, action) {
+  switch (action.type) {
+    case "UPDATE_FIELD":
+      return { ...state, [action.fieldName]: action.fieldValue };
+    default:
+      return state;
+  }
 }
 
-export default App
+function App() {
+  const [selected, setSelected] = useState("martingale");
+  const initialState = config[selected]?.flat()?.reduce((acc, curr) => {
+    acc[curr.name] = curr.initial_value;
+    return acc;
+  }, {});
+  const [formData, dispatch] = useReducer(formReducer, initialState);
+
+  const handleSelect = (e) => {
+    setSelected(e.target.value);
+  };
+
+  return (
+    <div>
+      <select
+        onChange={handleSelect}
+        value={selected}
+        className="input__select"
+      >
+        <option value="martingale">Martingale</option>
+        <option value="dalembert">Dalembert</option>
+        <option value="oscars">Oscars</option>
+        <option value="shafin">Shafin</option>
+      </select>
+      <ChildApp
+        form={config[selected]}
+        formData={formData}
+        dispatch={dispatch}
+      />
+    </div>
+  );
+}
+
+const RenderInputField = ({ item, handleInputChange, formData, errors }) => {
+  const { type, name, label, limit, options } = item;
+  return (
+    <CustomInput
+      type={type}
+      name={name}
+      label={label}
+      limit={limit}
+      options={options}
+      handleInputChange={handleInputChange}
+      value={formData[name]}
+      error={errors[name]}
+    >
+      {label}
+    </CustomInput>
+  );
+};
+
+const ChildApp = ({ form, formData, dispatch }) => {
+  const [errors, setErrors] = useState({});
+
+  const validateField = (name, value) => {
+    const fieldConfig = form?.flat()?.find((field) => field.name === name);
+    if (fieldConfig) {
+      const { limit } = fieldConfig;
+      if (!value) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: "Value cannot be empty",
+        }));
+        return;
+      } else if (limit && value) {
+        if (value < limit.min) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: `Value cannot be greater than ${limit.max}`,
+          }));
+          return;
+        } else if (value > limit.max) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: `Value cannot be greater than ${limit.max}`,
+          }));
+          return;
+        }
+      }
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: "",
+      }));
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    dispatch({ type: "UPDATE_FIELD", fieldName: name, fieldValue: value });
+    validateField(name, value);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("test formData", formData);
+    console.log("test errors", errors);
+  };
+
+  return (
+    <div>
+      <div>
+        {form?.map((item, index) => {
+          if (Array.isArray(item)) {
+            return (
+              <div className="input__group" key={index + "outer"}>
+                {item.map((i) => {
+                  const { name } = i;
+                  return (
+                    <RenderInputField
+                      key={name + index}
+                      item={i}
+                      handleInputChange={handleInputChange}
+                      formData={formData}
+                      errors={errors}
+                    />
+                  );
+                })}
+              </div>
+            );
+          }
+          const { name } = item;
+          return (
+            <RenderInputField
+              key={name + index}
+              item={item}
+              handleInputChange={handleInputChange}
+              formData={formData}
+              errors={errors}
+            />
+          );
+        })}
+      </div>
+      <div>
+        <button onClick={handleSubmit}>Submit</button>
+      </div>
+    </div>
+  );
+};
+
+export default App;
