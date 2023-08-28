@@ -1,0 +1,60 @@
+* {
+    box-sizing: border-box;
+}
+
+input, select, button {
+    outline: none;
+    font-size: 14px;
+    padding: 8px;
+}
+
+.input {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 1.6rem 0 1.6rem 0;
+    position: relative;
+    &__error {
+        border-color: red;
+    }
+    &__text {
+        border: none;
+        display: block;
+        width: 100%;
+        border-radius: 4px;
+    }
+    &__select {
+        border: none;
+        display: block;
+        width: 98%;
+        border-radius: 4px;
+    }
+    &__label {
+        position: absolute;
+        top: -8px;
+        left: 8px;
+        background: #fff;
+        padding: 0 5px;
+        font-size: 10px;
+        color: #999;
+
+    }
+    &__error {
+        position: relative;
+        &__msg {
+            color: red;
+            position: absolute;
+            font-size: 10px;
+            bottom: -16px;
+            left: 0;
+        }
+    }
+
+    &__group {
+        border: 1px solid #ccc;
+        padding: 0 8px;
+        border-radius: 4px;
+    }
+}
