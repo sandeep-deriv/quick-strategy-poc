@@ -23,7 +23,7 @@ export default function CustomInput({
             key={type + name}
             name={name}
             type={type}
-            value={value}
+            value={value ?? ''}
             onChange={handleChange}
             placeholder={label}
             className="input__text"
@@ -33,7 +33,7 @@ export default function CustomInput({
         return (
           <select
             key={type + name}
-            value={value}
+            value={value ?? ''}
             onChange={handleChange}
             className="input__select"
             name={name}
