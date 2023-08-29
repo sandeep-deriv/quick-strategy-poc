@@ -1,4 +1,5 @@
 import { is_valid_condition } from "../condition-validation";
+import { INPUT_TYPES } from "../constants";
 import CustomInput from "./CustomInput";
 
 const RenderInputField = ({
@@ -9,7 +10,7 @@ const RenderInputField = ({
     selected,
 }) => {
     const { type, name, label, limit, options, conditions } = item;
-    if (type === "group") return <p>{label}</p>;
+    if (type === INPUT_TYPES.GROUP) return <p>{label}</p>;
     else if (
         conditions &&
         !is_valid_condition({ conditions, currentFormData: formData[selected] })

@@ -148,7 +148,7 @@ export default {
         TRADE_TYPE,
         [
             {
-                type: "group",
+                type: INPUT_TYPES.GROUP,
                 label: "Group Name",
             },
             DURATION_UNIT,
@@ -184,7 +184,7 @@ export default {
         ASSET,
         [
             {
-                type: "group",
+                type: INPUT_TYPES.GROUP,
                 label: "Sample Group Name 1",
             },
             DURATION_UNIT,

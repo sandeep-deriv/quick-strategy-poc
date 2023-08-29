@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useState } from "react";
 import config from "./config";
 import FormController from "./compoents/FormController";
+import { INPUT_TYPES } from "./constants";
 
 // Reducer function to handle form state changes
 function formReducer(state, action) {
@@ -24,7 +25,7 @@ function App() {
   const [formData, dispatch] = useReducer(formReducer, {});
   useEffect(() => {
     const initialState = config[selected]?.flat()?.reduce((acc, curr) => {
-      if (curr.type === "group") return acc;
+      if (curr.type === INPUT_TYPES.GROUP) return acc;
       acc[curr.name] = curr.initial_value;
       return acc;
     }, {});

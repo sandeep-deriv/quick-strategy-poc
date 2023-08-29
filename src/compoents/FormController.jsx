@@ -1,6 +1,7 @@
 import { useState } from "react";
 import RenderInputField from "./RenderInputField";
 import { is_valid_condition } from "../condition-validation";
+import { INPUT_TYPES } from "../constants";
 
 const FormController = ({ form, formData, dispatch, selected }) => {
     const [errors, setErrors] = useState({});
@@ -49,7 +50,7 @@ const FormController = ({ form, formData, dispatch, selected }) => {
         const final_form = form?.flat()?.filter((field) => {
             const { conditions, type } = field;
             if (
-                type === "group" ||
+                type === INPUT_TYPES.GROUP ||
                 (conditions && !is_valid_condition({ conditions, currentFormData: formData[selected] }))
             ) {
                 return false;
