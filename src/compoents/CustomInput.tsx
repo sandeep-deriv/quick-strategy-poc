@@ -17,6 +17,7 @@ export default function CustomInput({
   const getInput = () => {
     switch (type) {
       case "text":
+      case "number":
         return (
           <input
             key={type + name}
@@ -37,11 +38,10 @@ export default function CustomInput({
             className="input__select"
             name={name}
           >
-            <option value={""}>{label}</option>
             {options.map((option) => {
               return (
-                <option key={option} value={option}>
-                  {option}
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               );
             })}

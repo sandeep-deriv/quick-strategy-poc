@@ -1,12 +1,18 @@
-import { useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import config from "./config";
-import CustomInput from "./compoents/CustomInput";
+import FormController from "./compoents/FormController";
 
 // Reducer function to handle form state changes
 function formReducer(state, action) {
-  switch (action.type) {
+  const { selected, initialState, fieldName, fieldValue, type } = action;
+  switch (type) {
+    case "UPDATE_SELECTED":
+      return { ...state, [selected]: { ...initialState, ...state[selected] } };
     case "UPDATE_FIELD":
-      return { ...state, [action.fieldName]: action.fieldValue };
+      return {
+        ...state,
+        [selected]: { ...state[selected], [fieldName]: fieldValue },
+      };
     default:
       return state;
   }
@@ -14,11 +20,22 @@ function formReducer(state, action) {
 
 function App() {
   const [selected, setSelected] = useState("martingale");
-  const initialState = config[selected]?.flat()?.reduce((acc, curr) => {
-    acc[curr.name] = curr.initial_value;
-    return acc;
-  }, {});
-  const [formData, dispatch] = useReducer(formReducer, initialState);
+
+  const [formData, dispatch] = useReducer(formReducer, {});
+  useEffect(() => {
+    const initialState = config[selected]?.flat()?.reduce((acc, curr) => {
+      if (curr.type === "group") return acc;
+      acc[curr.name] = curr.initial_value;
+      return acc;
+    }, {});
+
+    dispatch({
+      type: "UPDATE_SELECTED",
+      selected: selected,
+      initialState: initialState,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected]);
 
   const handleSelect = (e) => {
     setSelected(e.target.value);
@@ -36,122 +53,14 @@ function App() {
         <option value="oscars">Oscars</option>
         <option value="shafin">Shafin</option>
       </select>
-      <ChildApp
+      <FormController
         form={config[selected]}
         formData={formData}
         dispatch={dispatch}
+        selected={selected}
       />
     </div>
   );
 }
-
-const RenderInputField = ({ item, handleInputChange, formData, errors }) => {
-  const { type, name, label, limit, options } = item;
-  return (
-    <CustomInput
-      type={type}
-      name={name}
-      label={label}
-      limit={limit}
-      options={options}
-      handleInputChange={handleInputChange}
-      value={formData[name]}
-      error={errors[name]}
-    >
-      {label}
-    </CustomInput>
-  );
-};
-
-const ChildApp = ({ form, formData, dispatch }) => {
-  const [errors, setErrors] = useState({});
-
-  const validateField = (name, value) => {
-    const fieldConfig = form?.flat()?.find((field) => field.name === name);
-    if (fieldConfig) {
-      const { limit } = fieldConfig;
-      if (!value) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          [name]: "Value cannot be empty",
-        }));
-        return;
-      } else if (limit && value) {
-        if (value < limit.min) {
-          setErrors((prevErrors) => ({
-            ...prevErrors,
-            [name]: `Value cannot be greater than ${limit.max}`,
-          }));
-          return;
-        } else if (value > limit.max) {
-          setErrors((prevErrors) => ({
-            ...prevErrors,
-            [name]: `Value cannot be greater than ${limit.max}`,
-          }));
-          return;
-        }
-      }
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        [name]: "",
-      }));
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    dispatch({ type: "UPDATE_FIELD", fieldName: name, fieldValue: value });
-    validateField(name, value);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("test formData", formData);
-    console.log("test errors", errors);
-    form?.flat()?.filter((field) => {
-      validateField(field.name, formData[field.name]);
-    });
-  };
-
-  return (
-    <div>
-      <div>
-        {form?.map((item, index) => {
-          if (Array.isArray(item)) {
-            return (
-              <div className="input__group" key={index + "outer"}>
-                {item.map((i) => {
-                  const { name } = i;
-                  return (
-                    <RenderInputField
-                      key={name + index}
-                      item={i}
-                      handleInputChange={handleInputChange}
-                      formData={formData}
-                      errors={errors}
-                    />
-                  );
-                })}
-              </div>
-            );
-          }
-          const { name } = item;
-          return (
-            <RenderInputField
-              key={name + index}
-              item={item}
-              handleInputChange={handleInputChange}
-              formData={formData}
-              errors={errors}
-            />
-          );
-        })}
-      </div>
-      <div>
-        <button onClick={handleSubmit}>Submit</button>
-      </div>
-    </div>
-  );
-};
 
 export default App;
